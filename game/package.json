@@ -1,4 +1,8 @@
 {
   "name": "glitchy-time-crystal",
-  "main": "main.js"
+  "main": "src/server.js",
+  "version": "0.0",
+  "author": "Team Moodkill",
+  "license": "MIT",
+  "repository": "shnikola/js13k-glitchy-time-crystal"
 }
