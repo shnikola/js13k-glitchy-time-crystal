@@ -16,7 +16,9 @@ socketio.on('connection', function(socket) {
   
   socket.on('playerUpdate', function(state) { player.update(state) });
   
-  socket.on('disconnect', function(){});
+  socket.on('disconnect', function(){
+    game.players[player.id] = null;
+  });
 });
 
 
