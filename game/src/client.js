@@ -1,63 +1,75 @@
 (function() {
 
-var canvas = document.getElementById("world");
-var context = canvas.getContext("2d");
-canvas.width = 640;
-canvas.height = 480;
-
-window.requestAnimationFrame =
-  window.requestAnimationFrame ||
-  window.mozRequestAnimationFrame ||
-  window.webkitRequestAnimationFrame ||
-  window.msRequestAnimationFrame ||
-  function(fn){ setTimeout(fn, 33); };
+var ratio = {
+  x: 1,
+  y: 1
+};
 
 var connected = false;
 var socket = {};
+var currentPlayer = null;
 
-var players = [];
+MOUSE = {};
+KEYBOARD = {};
+
+GFX = Graphics();
+STATE = State();
 
 init();
 
 function init() {
+  controls();
   connect();
-  setTimeout(tic, 10);
+  setTimeout(draw, 10);
+  setTimeout(localUpdate, 10);
+}
+
+function controls() {
+  window.onkeydown = function(e) { KEYBOARD[e.keyCode] = true; };
+  window.onkeyup = function(e) { KEYBOARD[e.keyCode] = false; };
+  var setMouse = function(e) {
+    MOUSE.x = e.clientX - GFX.canvas.offsetLeft;
+    MOUSE.y = e.clientY - GFX.canvas.offsetTop;
+    MOUSE.x *= ratio.x;
+    MOUSE.y *= ratio.y;
+  }
+  GFX.canvas.onmousemove = setMouse;
+  GFX.canvas.onmousedown = function(e) { setMouse(e); MOUSE.down = true; };
+  GFX.canvas.onmouseup = function(e) { setMouse(e); MOUSE.down = false; };
 }
 
 function connect() {
   connected = true;
-  console.log('connecting');
+  console.log('Connecting...');
   if (!socket.connected) socket = io(document.location.href);
-  socket.on('update', onUpdate);
-  socket.on('config', onConfig);
+  
+  socket.on('playerInit', function(data) {
+    console.log("Player initialized", data)
+    currentPlayer = Player(data);
+  });
+  socket.on('globalUpdate', onUpdate);
   socket.on('disconnect', onDisconnect);
   // socket.emit('playerInfo', { name: playerName });
 }
 
-
 function onUpdate(data) {
-  players = [];
-  players = players.concat(data.aTeam);
-  players = players.concat(data.bTeam);
+  STATE.load(data)
 }
 
-function onConfig() {}
 function onDisconnect() {}
 
-function tic() {
-  console.log(players)
-  for (var i = 0; i < players.length; i++) {
-    drawPlayer(players[i]);
+function draw() {
+  STATE.draw();
+  requestAnimationFrame(draw);
+}
+
+function localUpdate() {
+  if (currentPlayer) {
+    currentPlayer.move();
+    socket.emit('playerUpdate', currentPlayer.state());
   }
-  window.requestAnimationFrame(tic);
+  setTimeout(localUpdate, 33);
 }
-
-function drawPlayer(sprite) {
-  console.log(sprite)
-  context.fillStyle = "rgb(255, 255, 255)";
-  context.fillRect(sprite.x, sprite.y, 10, 10);
-}
-
   
 })();
 

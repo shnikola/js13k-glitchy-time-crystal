@@ -4,11 +4,7 @@ body {
 
 canvas {
   display: block;
-  height: 480px;
   margin: 50px auto;
   border: 1px dashed #666;
 }
 
-#world {
-  width: 640px;
-}

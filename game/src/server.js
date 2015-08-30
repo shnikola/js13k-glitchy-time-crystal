@@ -12,8 +12,10 @@ socketio.on('connection', function(socket) {
   
   player = new Player();
   player.joinGame(game)
+  socket.emit('playerInit', player)
   
-  socket.on('event', function(data){});
+  socket.on('playerUpdate', function(state) { player.update(state) });
+  
   socket.on('disconnect', function(){});
 });
 
@@ -38,7 +40,7 @@ Game.prototype.start = function() {
 }
 
 Game.prototype.tic = function() {
-  socketio.emit('update', {
+  socketio.emit('globalUpdate', {
     aTeam: this.aTeam,
     bTeam: this.bTeam,
     bullets: this.bullets
@@ -60,4 +62,9 @@ Player.prototype.joinGame = function(game) {
   game[this.team + 'Team'].push(this);
   this.x = game.world.width * Math.random();
   this.y = game.world.height * Math.random();
+}
+
+Player.prototype.update = function(state) {
+  this.x = state.x;
+  this.y = state.y;
 }
