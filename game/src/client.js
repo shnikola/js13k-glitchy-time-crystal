@@ -20,8 +20,7 @@ function init() {
   controls();
   connect();
   GFX.canvas.style.cursor = 'none';
-  setTimeout(draw, 10);
-  setTimeout(localUpdate, 10);
+//  setTimeout(draw, 10);
 }
 
 function controls() {
@@ -58,23 +57,17 @@ function connect() {
 function onUpdate(data) {
   STATE.load(data);
   STATE.draw();
+  
+  STATE.player.move();
+  socket.emit('playerUpdate', STATE.player.state());
 }
 
 function onDisconnect() {}
 
 function draw() {
-  STATE.player && STATE.player.move();
   STATE.draw();
   requestAnimationFrame(draw);
 }
 
-function localUpdate() {
-  if (STATE.player) {
-//    STATE.player.move();
-    socket.emit('playerUpdate', STATE.player.state());
-  }
-  setTimeout(localUpdate, 33);
-}
-  
 })();
 
