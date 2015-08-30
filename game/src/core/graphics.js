@@ -11,7 +11,12 @@ Graphics = function() {
         },
         rect: function(x, y, w, h) {
           context.fillRect(x, y, w, h);
-        }
+        },
+        circle: function (x, y, r) {
+          context.beginPath();
+          context.arc(x, y, r, 0, Math.PI * 2);
+          context.stroke();
+        },
         
       };
   

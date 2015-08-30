@@ -7,7 +7,6 @@ var ratio = {
 
 var connected = false;
 var socket = {};
-var currentPlayer = null;
 
 MOUSE = {};
 KEYBOARD = {};
@@ -20,7 +19,8 @@ init();
 function init() {
   controls();
   connect();
-  setTimeout(draw, 10);
+  GFX.canvas.style.cursor = 'none';
+  //setTimeout(draw, 10);
   setTimeout(localUpdate, 10);
 }
 
@@ -44,8 +44,8 @@ function connect() {
   if (!socket.connected) socket = io(document.location.href);
   
   socket.on('playerInit', function(data) {
-    console.log("Player initialized", data)
-    currentPlayer = Player(data);
+    STATE.player =Player(data, true);
+    console.log("Player initialized", STATE.player);
   });
   socket.on('globalUpdate', onUpdate);
   socket.on('disconnect', onDisconnect);
@@ -53,7 +53,10 @@ function connect() {
 }
 
 function onUpdate(data) {
-  STATE.load(data)
+  STATE.player.merge(data.players[STATE.player.id]); // Merge current state
+  data.players[STATE.player.id] = null; // Don't need this, we draw player separately.
+  STATE.load(data);
+  STATE.draw();
 }
 
 function onDisconnect() {}
@@ -64,9 +67,9 @@ function draw() {
 }
 
 function localUpdate() {
-  if (currentPlayer) {
-    currentPlayer.move();
-    socket.emit('playerUpdate', currentPlayer.state());
+  if (STATE.player) {
+    STATE.player.move();
+    socket.emit('playerUpdate', STATE.player.state());
   }
   setTimeout(localUpdate, 33);
 }

@@ -10,7 +10,7 @@ socketio.on('connection', function(socket) {
   if (!game.running) game.start();
   log.debug('New connection', socket.id);
   
-  player = new Player();
+  var player = new Player();
   player.joinGame(game)
   socket.emit('playerInit', player)
   
@@ -29,20 +29,19 @@ function Game() {
     height: 480
   };
 
-  this.aTeam = [];
-  this.bTeam = [];
+  this.players = [];
+  this.teamSizes = {a: 0, b: 0};
   this.bullets = [];
 }
 
 Game.prototype.start = function() {
   this.running = true;
-  setTimeout(this.tic.bind(this), 1000);
+  setTimeout(this.tic.bind(this), 33);
 }
 
 Game.prototype.tic = function() {
   socketio.emit('globalUpdate', {
-    aTeam: this.aTeam,
-    bTeam: this.bTeam,
+    players: this.players,
     bullets: this.bullets
   });
   setTimeout(this.tic.bind(this), 33);
@@ -58,8 +57,10 @@ function Player(socket) {
 }
 
 Player.prototype.joinGame = function(game) {
-  this.team = game.aTeam.length <= game.bTeam.length ? 'a' : 'b';
-  game[this.team + 'Team'].push(this);
+  this.team = game.teamSizes.a <= game.teamSizes.b ? 'a' : 'b';
+  game.teamSizes[this.team] += 1;
+  this.id = game.players.length; // Mogu li istovremeno dvojica dobiti isti id?
+  game.players.push(this);
   this.x = game.world.width * Math.random();
   this.y = game.world.height * Math.random();
 }
