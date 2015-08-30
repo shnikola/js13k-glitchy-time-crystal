@@ -42,7 +42,8 @@ Game.prototype.start = function() {
 Game.prototype.tic = function() {
   socketio.emit('globalUpdate', {
     players: this.players,
-    bullets: this.bullets
+    bullets: this.bullets,
+    timestamp: Date.now()
   });
   setTimeout(this.tic.bind(this), 33);
 }
