@@ -56,8 +56,6 @@ function connect() {
 }
 
 function onUpdate(data) {
-  STATE.player.merge(data.players[STATE.player.id]); // Merge current state
-  data.players[STATE.player.id] = null; // Don't need this, we draw player separately.
   STATE.load(data);
   STATE.draw();
 }

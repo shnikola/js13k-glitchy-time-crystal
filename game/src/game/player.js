@@ -18,7 +18,6 @@ Player = function(o, main) {
           x = o.x;
           y = o.y;
           pingTime = o.pingTime;
-          console.log(o);
         },
         draw: function() {
           // player
