@@ -13,6 +13,8 @@ Player = function(o, main) {
       api = {
         id: id,
         merge: function(o) {
+          //console.log(x, y);
+          //console.log(o.x, o.y);
           x = o.x;
           y = o.y;
           pingTime = o.pingTime;
