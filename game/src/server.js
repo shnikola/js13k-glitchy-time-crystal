@@ -9,14 +9,22 @@ var game = new Game();
 socketio.on('connection', function(socket) {
   if (!game.running) game.start();
   log.debug('New connection', socket.id);
-  
+
   var player = new Player();
-  player.joinGame(game)
-  socket.emit('playerInit', player)
+  player.joinGame(game);
+  socket.emit('playerInit', player);
   
-  socket.on('playerUpdate', function(state) { player.update(state) });
+  socket.on('playerUpdate', function(state) { player.update(state); });
   
   socket.on('disconnect', function(){});
+
+  socket.on('pong', function(time) {
+    player.pingTime = Date.now() - time;
+  });
+
+  setInterval( function () {
+    socket.emit('ping', Date.now());
+  }, 1000);
 });
 
 
@@ -42,8 +50,7 @@ Game.prototype.start = function() {
 Game.prototype.tic = function() {
   socketio.emit('globalUpdate', {
     players: this.players,
-    bullets: this.bullets,
-    timestamp: Date.now()
+    bullets: this.bullets
   });
   setTimeout(this.tic.bind(this), 33);
 }

@@ -49,6 +49,9 @@ function connect() {
   });
   socket.on('globalUpdate', onUpdate);
   socket.on('disconnect', onDisconnect);
+  socket.on('ping', function (timestamp) {
+    socket.emit('pong', timestamp);
+  });
   // socket.emit('playerInfo', { name: playerName });
 }
 

@@ -3,6 +3,7 @@ Player = function(o, main) {
       id = o.id,
       x = o.x,
       y = o.y,
+      pingTime = 0,
       angle = 0,
       team = o.team,
       color = o.team == 'a' ? '#f00' : '#00f',
@@ -14,6 +15,8 @@ Player = function(o, main) {
         merge: function(o) {
           x = o.x;
           y = o.y;
+          pingTime = o.pingTime;
+          console.log(o);
         },
         draw: function() {
           // player
@@ -41,7 +44,10 @@ Player = function(o, main) {
           
         },
         state: function() {
-          return { x: x, y: y }
+          return { x: x, y: y };
+        },
+        pingTime: function() {
+          return pingTime;
         }
         
       };
