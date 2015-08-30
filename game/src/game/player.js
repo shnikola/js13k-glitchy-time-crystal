@@ -3,6 +3,7 @@ Player = function(o, main) {
       id = o.id,
       x = o.x,
       y = o.y,
+      stateVersion = null,
       pingTime = 0,
       angle = 0,
       team = o.team,
@@ -13,10 +14,10 @@ Player = function(o, main) {
       api = {
         id: id,
         merge: function(o) {
-          //console.log(x, y);
-          //console.log(o.x, o.y);
-          x = o.x;
-          y = o.y;
+          if (stateVersion < o.stateVersion) {
+            x = o.x;
+            y = o.y;
+          }
           pingTime = o.pingTime;
         },
         draw: function() {
@@ -45,7 +46,7 @@ Player = function(o, main) {
           
         },
         state: function() {
-          return { x: x, y: y };
+          return { x: x, y: y, version: stateVersion };
         },
         pingTime: function() {
           return pingTime;

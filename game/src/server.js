@@ -73,9 +73,11 @@ Player.prototype.joinGame = function(game) {
   game.players.push(this);
   this.x = game.world.width * Math.random();
   this.y = game.world.height * Math.random();
+  this.stateVersion = 0;
 }
 
 Player.prototype.update = function(state) {
   this.x = state.x;
   this.y = state.y;
+  this.stateVersion = state.version + 1;
 }
