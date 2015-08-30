@@ -3,7 +3,7 @@ Player = function(o, main) {
       id = o.id,
       x = o.x,
       y = o.y,
-      stateVersion = null,
+      stateVersion = -1,
       pingTime = 0,
       angle = 0,
       team = o.team,
@@ -51,6 +51,9 @@ Player = function(o, main) {
         },
         pingTime: function() {
           return pingTime;
+        },
+        stateVersion: function() {
+          return stateVersion;
         }
         
       };

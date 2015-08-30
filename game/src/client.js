@@ -55,11 +55,13 @@ function connect() {
 }
 
 function onUpdate(data) {
+  var fresh = (STATE.player.stateVersion() < data.players[STATE.player.id].stateVersion) || STATE.player.stateVersion() == 0
   STATE.load(data);
-  STATE.draw();
-  
-  STATE.player.move();
-  socket.emit('playerUpdate', STATE.player.state());
+  if (fresh) {
+    STATE.draw();
+    STATE.player.move();
+    socket.emit('playerUpdate', STATE.player.state());
+  } 
 }
 
 function onDisconnect() {}
