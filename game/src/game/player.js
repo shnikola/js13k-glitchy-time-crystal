@@ -17,6 +17,7 @@ Player = function(o, main) {
           if (stateVersion < o.stateVersion) {
             x = o.x;
             y = o.y;
+            stateVersion = o.stateVersion;
           }
           pingTime = o.pingTime;
         },
