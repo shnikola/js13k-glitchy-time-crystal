@@ -13,8 +13,8 @@ State = function() {
     },
     draw: function() {
       GFX.cls();
-      api.player && api.player.draw();
       sprites.forEach(function(n) { n.draw(); });
+      api.player && api.player.draw();
       api.player && GFX.context.fillText("DEBUG ping time:" + api.player.pingTime(), 10, 10);
     },
     clear: function () {

@@ -18,6 +18,7 @@ socketio.on('connection', function(socket) {
   
   socket.on('disconnect', function(){
     game.players[player.id] = null;
+    game.teamSizes[player.team] -= 1;
   });
 
   socket.on('pong', function(time) {
@@ -79,5 +80,5 @@ Player.prototype.joinGame = function(game) {
 Player.prototype.update = function(state) {
   this.x = state.x;
   this.y = state.y;
-  this.stateVersion = state.version + 1;
+  this.stateVersion = state.version;
 }

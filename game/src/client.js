@@ -20,7 +20,7 @@ function init() {
   controls();
   connect();
   GFX.canvas.style.cursor = 'none';
-//  setTimeout(draw, 10);
+  setTimeout(draw, 10);
 }
 
 function controls() {
@@ -55,18 +55,14 @@ function connect() {
 }
 
 function onUpdate(data) {
-  var fresh = (STATE.player.stateVersion() < data.players[STATE.player.id].stateVersion) || STATE.player.stateVersion() == 0
   STATE.load(data);
-  if (fresh) {
-    STATE.draw();
-    STATE.player.move();
-    socket.emit('playerUpdate', STATE.player.state());
-  } 
+  socket.emit('playerUpdate', STATE.player.state()); 
 }
 
 function onDisconnect() {}
 
 function draw() {
+  STATE.player && STATE.player.move();
   STATE.draw();
   requestAnimationFrame(draw);
 }

@@ -4,6 +4,7 @@ Player = function(o, main) {
       x = o.x,
       y = o.y,
       stateVersion = -1,
+      synced = false,
       pingTime = 0,
       angle = 0,
       team = o.team,
@@ -11,13 +12,16 @@ Player = function(o, main) {
       size = 10,
       speed = 5,
       moving = true,
+      shooting = false,
       api = {
         id: id,
         merge: function(o) {
-          if (stateVersion < o.stateVersion) {
+          if (stateVersion == o.stateVersion) {
             x = o.x;
             y = o.y;
-            stateVersion = o.stateVersion;
+            synced = true;
+          } else {
+            synced = false;
           }
           pingTime = o.pingTime;
         },
@@ -25,6 +29,13 @@ Player = function(o, main) {
           // player
           GFX.context.fillStyle = color;
           GFX.context.fillRect(x, y, size, size);
+          
+          // Shooting
+          if (shooting) {
+            GFX.context.font = "10px Consolas, monospace";
+            GFX.context.fillText("PEW PEW", x, y - 10);
+          }
+          
           if (main) {
             // crosshair
             GFX.context.lineWidth = 2;
@@ -43,8 +54,16 @@ Player = function(o, main) {
           if      (KEYBOARD[87]) { y -= speed; moving = true; }
           else if (KEYBOARD[83]) { y += speed; moving = true; }
           
+          if (MOUSE.down) { api.shoot(); }
           angle = Math.atan2(MOUSE.y - y, MOUSE.x - x);
           
+          if (moving) stateVersion += 1;
+        },
+        shoot: function() {
+          if (shooting) return;
+          
+          shooting = true;
+          setTimeout(function() { shooting = false; }, 600);
         },
         state: function() {
           return { x: x, y: y, version: stateVersion };
@@ -52,8 +71,8 @@ Player = function(o, main) {
         pingTime: function() {
           return pingTime;
         },
-        stateVersion: function() {
-          return stateVersion;
+        synced: function() {
+          return synced;
         }
         
       };
