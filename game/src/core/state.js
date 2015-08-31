@@ -2,6 +2,7 @@ State = function() {
   var sprites = [];
   var api = {
     player: null,
+    mybullets: [],
     load: function(d) {
       api.player.merge(d.players[api.player.id]); // Merge current state
       d.players[STATE.player.id] = null; // Don't need this, we draw player separately.
@@ -16,6 +17,7 @@ State = function() {
       sprites.forEach(function(n) { n.draw(); });
       api.player && api.player.draw();
       api.player && GFX.context.fillText("DEBUG ping time:" + api.player.pingTime(), 10, 10);
+      api.player && GFX.context.fillText("DEBUG FPS:" + FRAMERATE.estimatedFps(), 10, 20);
     },
     clear: function () {
       sprites.length = 0;

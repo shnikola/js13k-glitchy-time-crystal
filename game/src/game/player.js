@@ -10,7 +10,7 @@ Player = function(o, main) {
       team = o.team,
       color = o.team == 'a' ? '#f00' : '#00f',
       size = 10,
-      speed = 5,
+      speed = 0.08,
       moving = true,
       shooting = false,
       api = {
@@ -46,13 +46,13 @@ Player = function(o, main) {
             GFX.context.fillRect(x + size / 2 + size * Math.cos(angle), y + size / 2 + size * Math.sin(angle), 3, 3);
           }
         },
-        move: function() {
+        move: function(timestep) {
           moving = false;
           
-          if      (KEYBOARD[65]) { x -= speed; moving = true; }
-          else if (KEYBOARD[68]) { x += speed; moving = true; }
-          if      (KEYBOARD[87]) { y -= speed; moving = true; }
-          else if (KEYBOARD[83]) { y += speed; moving = true; }
+          if      (KEYBOARD[65]) { x -= speed * timestep; moving = true; }
+          else if (KEYBOARD[68]) { x += speed * timestep; moving = true; }
+          if      (KEYBOARD[87]) { y -= speed * timestep; moving = true; }
+          else if (KEYBOARD[83]) { y += speed * timestep; moving = true; }
           
           if (MOUSE.down) { api.shoot(); }
           angle = Math.atan2(MOUSE.y - y, MOUSE.x - x);

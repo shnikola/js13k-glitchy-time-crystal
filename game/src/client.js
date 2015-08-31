@@ -6,11 +6,12 @@ var ratio = {
 };
 
 var connected = false;
-var socket = {};
+SOCKET = {};
 
 MOUSE = {};
 KEYBOARD = {};
 
+FRAMERATE = Framerate();
 GFX = Graphics();
 STATE = State();
 
@@ -20,7 +21,7 @@ function init() {
   controls();
   connect();
   GFX.canvas.style.cursor = 'none';
-  setTimeout(draw, 10);
+  requestAnimationFrame(animate);
 }
 
 function controls() {
@@ -40,31 +41,43 @@ function controls() {
 function connect() {
   connected = true;
   console.log('Connecting...');
-  if (!socket.connected) socket = io(document.location.href);
+  if (!SOCKET.connected) SOCKET = io(document.location.href);
   
-  socket.on('playerInit', function(data) {
+  SOCKET.on('playerInit', function(data) {
     STATE.player = Player(data, true);
     console.log("Player initialized", STATE.player);
   });
-  socket.on('globalUpdate', onUpdate);
-  socket.on('disconnect', onDisconnect);
-  socket.on('ping', function (timestamp) {
-    socket.emit('pong', timestamp);
+  SOCKET.on('globalUpdate', onUpdate);
+  SOCKET.on('disconnect', onDisconnect);
+  SOCKET.on('ping', function (timestamp) {
+    SOCKET.emit('pong', timestamp);
   });
-  // socket.emit('playerInfo', { name: playerName });
+
 }
 
 function onUpdate(data) {
   STATE.load(data);
-  socket.emit('playerUpdate', STATE.player.state()); 
 }
 
 function onDisconnect() {}
 
-function draw() {
-  STATE.player && STATE.player.move();
+function animate(timestamp) {
+  if (FRAMERATE.exceedsFrameRate(timestamp)) {
+    requestAnimationFrame(animate);
+    return;
+  }
+  
+  FRAMERATE.calculateDelta(timestamp);
+  
+  // Update delta of time in fixed increments of FRAMERATE.timestep
+  FRAMERATE.fixedStepUpdate(function(timestep) {
+    STATE.player && STATE.player.move(timestep);
+  });
+  
   STATE.draw();
-  requestAnimationFrame(draw);
+  STATE.player && SOCKET.emit('playerUpdate', STATE.player.state());
+  
+  requestAnimationFrame(animate);
 }
 
 })();
