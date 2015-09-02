@@ -32,7 +32,6 @@ Player = function(o, main) {
           
           // Shooting
           if (shooting) {
-            GFX.context.font = "10px Consolas, monospace";
             GFX.context.fillText("PEW PEW", x, y - 10);
           }
           

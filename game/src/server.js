@@ -25,6 +25,13 @@ socketio.on('connection', function(socket) {
     player.pingTime = Date.now() - time;
   });
 
+  socket.on('chat_msg', function(msg) {
+    socketio.emit('incoming_chat', {
+      text: msg,
+      id: player.id
+    });
+  });
+
   setInterval( function () {
     socket.emit('ping', Date.now());
   }, 1000);

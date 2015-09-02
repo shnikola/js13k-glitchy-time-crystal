@@ -9,3 +9,21 @@ canvas {
   border: 1px dashed #666;
 }
 
+input#chaty {
+  display: block;
+  margin: 0 auto;
+  background-color: #000;
+  color: #fff;
+  width: 500px;
+  height: 20px;
+  border: none;
+  border-bottom: solid 1px #666;
+  transition: border 0.3s;
+}
+
+input#chaty:focus,
+input#chaty.focus {
+  border-bottom: solid 1px #fff;
+  outline: none;
+}
+
