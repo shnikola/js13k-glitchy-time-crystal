@@ -1,9 +1,5 @@
 (function() {
 
-window.onload = function() {
-  chatyInput = document.getElementById('chaty');
-};
-
 var ratio = {
   x: 1,
   y: 1
@@ -20,6 +16,8 @@ FRAMERATE = Framerate();
 GFX = Graphics();
 STATE = State();
 
+CHAT = Chat();
+
 init();
 
 function init() {
@@ -33,10 +31,7 @@ function controls() {
   window.onkeydown = function(e) { KEYBOARD[e.keyCode] = true;};
   window.onkeyup = function(e) {
     KEYBOARD[e.keyCode] = false;
-    if(e.keyCode == 84 && document.activeElement != chatyInput) {
-      chatyInput.focus();
-      chatting = true;
-    }
+    CHAT.keyup(e);
   };
   var setMouse = function(e) {
     MOUSE.x = e.clientX - GFX.canvas.offsetLeft;
@@ -64,8 +59,7 @@ function connect() {
     SOCKET.emit('pong', timestamp);
   });
   SOCKET.on('incoming_chat', function(chat) {
-    chat.ttl = 300;
-    STATE.messages.unshift(chat);
+    CHAT.pushMessage(chat);
   });
 
 }
@@ -86,36 +80,14 @@ function animate(timestamp) {
   
   // Update delta of time in fixed increments of FRAMERATE.timestep
   FRAMERATE.fixedStepUpdate(function(timestep) {
-    STATE.player && !chatting && STATE.player.move(timestep);
+    !CHAT.chatting() && STATE.player && STATE.player.move(timestep);
   });
   
   STATE.draw();
-  STATE.player && SOCKET.emit('playerUpdate', STATE.player.state());
+  STATE.player && SOCKET.emit('playerUpdate', STATE.player.sendData());
   
   requestAnimationFrame(animate);
 }
-
-submitChat = function (e){
-  if(e.keyCode == 13){
-    SOCKET.emit('chat_msg', document.getElementById('chaty').value);
-    chatting = false;
-    clearChat();
-    chatyInput.blur();
-  }
-  else if (e.keyCode == 27) {
-    chatting = false;
-    clearChat();
-    chatyInput.blur();
-  }
-};
-
-clearChat = function (){
-  chatyInput.value = '';
-};
-
-beginChat = function (){
-  chatting = true;
-};
 
 })();
 

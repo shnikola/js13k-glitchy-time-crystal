@@ -1,6 +1,8 @@
 log('Hi! This is some game.');
 
 var socketio = require('sandbox-io');
+var weapons = require('./game/weapons.js')
+
 log('Loaded sandbox-io', socketio);
 
 // TODO: better game managemt
@@ -49,7 +51,6 @@ function Game() {
 
   this.players = [];
   this.teamSizes = {a: 0, b: 0};
-  this.bullets = [];
 }
 
 Game.prototype.start = function() {
@@ -58,9 +59,9 @@ Game.prototype.start = function() {
 }
 
 Game.prototype.tic = function() {
+  this.players.forEach(function(p) { p && p.tic(); });
   socketio.emit('globalUpdate', {
     players: this.players,
-    bullets: this.bullets
   });
   setTimeout(this.tic.bind(this), 33);
 }
@@ -69,6 +70,7 @@ Game.prototype.tic = function() {
 
 function Player(socket) {
   this.socket = socket;
+  this.bullets = [];
   // this.name = 'player' + pCounter++;
   // socket.on('playerInfo', this.onPlayerInfo.bind(this));
   // socket.on('disconnect', this.onExit.bind(this));
@@ -87,5 +89,14 @@ Player.prototype.joinGame = function(game) {
 Player.prototype.update = function(state) {
   this.x = state.x;
   this.y = state.y;
+  this.bullets = this.bullets.concat(state.bullets);
   this.stateVersion = state.version;
+}
+
+Player.prototype.tic = function() {
+  for (var i = 0; i < this.bullets.length; i++) {
+    var bullet = this.bullets[i];
+    bullet.x += Math.cos(bullet.angle) * weapons.list[bullet.weapon].speed * 33;
+    bullet.y += Math.sin(bullet.angle) * weapons.list[bullet.weapon].speed * 33;
+  }
 }

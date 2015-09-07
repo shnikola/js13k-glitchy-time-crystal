@@ -10,13 +10,14 @@
 
 <body>
   <canvas id="world" width="800" height="480" onclick="this.focus();" oncontextmenu="return false;"></canvas>
+  <input type="text" id="chaty" maxlength="80">
   <script src="src/core/framerate.js"></script>
   <script src="src/core/graphics.js"></script>
   <script src="src/core/state.js"></script>
   <script src="src/game/player.js"></script>
-  <script src="src/game/msg.js"></script>
+  <script src="src/game/weapons.js"></script>
+  <script src="src/game/chat.js"></script>
   <script src="src/client.js"></script>
-  <input type="text" id="chaty" onkeyup="submitChat(event)" onfocusout="clearChat()" onfocus="beginChat()" maxlength="80">
 </body>
 
 </html>
