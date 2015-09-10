@@ -6,12 +6,12 @@ Framerate = function() {
       lastFpsUpdate = 0,
       framesThisSecond = 0,
       minFrameDelay = 0, // For throttling frame rate, set to 1000 / maxFrameRate
-      
+
       api = {
         calculateDelta: function(timestamp) {
           delta += timestamp - lastFrameTime;
           lastFrameTime = timestamp;
-      
+
           // Estimate Framerate
           if (timestamp > lastFpsUpdate + 1000) {
             fps = 0.25 * framesThisSecond + 0.75 * fps;
@@ -20,7 +20,7 @@ Framerate = function() {
           }
           framesThisSecond++;
         },
-    
+
         fixedStepUpdate: function(update) {
           var numUpdateSteps = 0;
           while (delta >= timestep) {
@@ -32,14 +32,14 @@ Framerate = function() {
             }
           }
         },
-    
+
         exceedsFrameRate: function(timestamp) {
           return timestamp < lastFrameTime + minFrameDelay;
         },
-        
+
         estimatedFps: function() {
           return Math.round(fps);
         }
       };
   return api;
-}
+};

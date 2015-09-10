@@ -1,7 +1,7 @@
 Graphics = function() {
   var canvas = document.getElementById("world"),
       context = canvas.getContext("2d"),
-      
+
       api = {
         canvas: canvas,
         context: context,
@@ -17,8 +17,8 @@ Graphics = function() {
           context.arc(x, y, r, 0, Math.PI * 2);
           context.stroke();
         },
-        
+
       };
-  
+
   return api;
-}
+};

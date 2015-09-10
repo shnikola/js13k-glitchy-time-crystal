@@ -28,7 +28,7 @@ function init() {
 }
 
 function controls() {
-  window.onkeydown = function(e) { KEYBOARD[e.keyCode] = true;};
+  window.onkeydown = function(e) { KEYBOARD[e.keyCode] = true; };
   window.onkeyup = function(e) {
     KEYBOARD[e.keyCode] = false;
     CHAT.keyup(e);
@@ -48,11 +48,13 @@ function connect() {
   connected = true;
   console.log('Connecting...');
   if (!SOCKET.connected) SOCKET = io(document.location.href);
-  
+
   SOCKET.on('playerInit', function(data) {
-    STATE.player = Player(data, true);
+    STATE.player = new Player(data, true);
     console.log("Player initialized", STATE.player);
+
   });
+
   SOCKET.on('globalUpdate', onUpdate);
   SOCKET.on('disconnect', onDisconnect);
   SOCKET.on('ping', function (timestamp) {
@@ -75,19 +77,24 @@ function animate(timestamp) {
     requestAnimationFrame(animate);
     return;
   }
-  
+
   FRAMERATE.calculateDelta(timestamp);
-  
+
   // Update delta of time in fixed increments of FRAMERATE.timestep
   FRAMERATE.fixedStepUpdate(function(timestep) {
-    !CHAT.chatting() && STATE.player && STATE.player.move(timestep);
+    if (STATE.player && !CHAT.chatting()) {
+      STATE.player.collectInput(timestep);
+      STATE.player.move(timestep);
+    }
   });
-  
+
+  if (STATE.player && STATE.player.stateChanged()) {
+    SOCKET.emit('playerUpdate', STATE.player.prepareDelta());
+  }
+
   STATE.draw();
-  STATE.player && SOCKET.emit('playerUpdate', STATE.player.sendData());
-  
+
   requestAnimationFrame(animate);
 }
 
 })();
-

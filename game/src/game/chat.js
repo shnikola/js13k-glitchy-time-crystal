@@ -36,21 +36,21 @@ function Chat() {
           if (e.keyCode == 84 && document.activeElement != input) {
             input.focus();
             chatting = true;
-          }          
+          }
         }
       };
-      
+
       input.onkeyup = function(e) {
         if (e.keyCode == 13 || e.keyCode == 27) {
           if (e.keyCode == 13 && input.value) { SOCKET.emit('chat_msg', input.value); } // On Enter
           chatting = false;
-          api.clearInput()
+          api.clearInput();
           input.blur();
         }
       };
-      
+
       input.onfocusout = api.clearInput;
-      input.onfocus = function() { 
+      input.onfocus = function() {
         chatting = true;
       };
 

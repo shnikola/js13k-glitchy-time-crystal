@@ -1,7 +1,7 @@
-(function(exports) {
+WEAPONS = {
+  1: { speed: 0.9, damage: 1 }
+};
 
-  exports.list = {
-    1: { speed: 0.3, damage: 1 }
-  };
-  
-})(typeof exports === 'undefined' ? window.WEAPONS={} : exports);
+if (typeof exports !== 'undefined') {
+  exports.weapons = WEAPONS;
+}

@@ -1,7 +1,11 @@
 log('Hi! This is some game.');
 
 var socketio = require('sandbox-io');
-var weapons = require('./game/weapons.js')
+
+var Player = require('./game/player.js').player;
+var Bullet = require('./game/bullet.js').bullet;
+var Crate = require('./game/crate.js').crate;
+var Utils = require('./core/utils.js').utils;
 
 log('Loaded sandbox-io', socketio);
 
@@ -12,15 +16,15 @@ socketio.on('connection', function(socket) {
   if (!game.running) game.start();
   log.debug('New connection', socket.id);
 
-  var player = new Player();
+  var player = new Player({});
   player.joinGame(game);
-  socket.emit('playerInit', player);
-  
-  socket.on('playerUpdate', function(state) { player.update(state); });
-  
-  socket.on('disconnect', function(){
-    game.players[player.id] = null;
-    game.teamSizes[player.team] -= 1;
+  socket.emit('playerInit', player.toEmit());
+
+  socket.on('playerUpdate', function(state) { player.receiveUpdate(state); });
+
+  socket.on('disconnect', function() {
+    //game.players[player.id] = null;
+    //game.teamSizes[player.team] -= 1;
   });
 
   socket.on('pong', function(time) {
@@ -34,7 +38,7 @@ socketio.on('connection', function(socket) {
     });
   });
 
-  setInterval( function () {
+  setInterval( function() {
     socket.emit('ping', Date.now());
   }, 1000);
 });
@@ -44,59 +48,74 @@ socketio.on('connection', function(socket) {
 
 function Game() {
   this.id = 'game' + Math.random();
-  this.world = {
-    width: 640,
-    height: 480
-  };
-
-  this.players = [];
   this.teamSizes = {a: 0, b: 0};
+  this.players = [];
+  this.crates = [];
+  this.bullets = [];
 }
 
 Game.prototype.start = function() {
+  this.crates.push(new Crate({x: 300, y: 300}));
   this.running = true;
   setTimeout(this.tic.bind(this), 33);
-}
+};
 
 Game.prototype.tic = function() {
-  this.players.forEach(function(p) { p && p.tic(); });
+  this.calculateCollisions();
+  // TODO: Purge dead
+  this.players.forEach(function(x) { if (x) x.move(1000 / 60); });
+  this.crates.forEach(function(x) { if (x) x.move(1000 / 60); });
+  this.bullets.forEach(function(x) { if (x) x.move(1000 / 60); });
+
   socketio.emit('globalUpdate', {
-    players: this.players,
+    players: this.players.map(function(a) { return a.toEmit(); }),
+    crates: this.crates.map(function(a) { return a.toEmit(); }),
+    bullets: this.bullets.map(function(a) { return a.toEmit(); })
   });
   setTimeout(this.tic.bind(this), 33);
-}
+};
+
+Game.prototype.calculateCollisions = function() {
+  var self = this;
+  self.bullets.forEach(function(b) {
+    self.players.forEach(function(p) {
+      if (p && p.id != b.player && Utils.collides(b, p)) { b.dead = true; p.shot(b); }
+    });
+    self.crates.forEach(function(c) {
+      if (Utils.collides(b, c)) {
+        b.dead = true; c.shot(b);
+      }
+    });
+  });
+
+  self.players.forEach(function(p) {
+    self.crates.forEach(function(c) {
+      if (Utils.collides(p, c)) {
+        // TODO: fix this
+        c.dx = p.dx * p.size / c.size; c.dy = p.dy * p.size / c.size;
+        p.dx = 0; p.dy = 0;
+      }
+    });
+  });
+
+};
 
 // ------ Player -------
-
-function Player(socket) {
-  this.socket = socket;
-  this.bullets = [];
-  // this.name = 'player' + pCounter++;
-  // socket.on('playerInfo', this.onPlayerInfo.bind(this));
-  // socket.on('disconnect', this.onExit.bind(this));
-}
 
 Player.prototype.joinGame = function(game) {
   this.team = game.teamSizes.a <= game.teamSizes.b ? 'a' : 'b';
   game.teamSizes[this.team] += 1;
-  this.id = game.players.length; // Mogu li istovremeno dvojica dobiti isti id?
+  this.id = game.players.length;
   game.players.push(this);
-  this.x = game.world.width * Math.random();
-  this.y = game.world.height * Math.random();
-  this.stateVersion = 0;
-}
+  // Place player
+  this.initPosition();
+};
 
-Player.prototype.update = function(state) {
-  this.x = state.x;
-  this.y = state.y;
-  this.bullets = this.bullets.concat(state.bullets);
-  this.stateVersion = state.version;
-}
-
-Player.prototype.tic = function() {
-  for (var i = 0; i < this.bullets.length; i++) {
-    var bullet = this.bullets[i];
-    bullet.x += Math.cos(bullet.angle) * weapons.list[bullet.weapon].speed * 33;
-    bullet.y += Math.sin(bullet.angle) * weapons.list[bullet.weapon].speed * 33;
+Player.prototype.receiveUpdate = function(state) {
+  this.dx = this.dx + state.dx;
+  this.dy = this.dy + state.dy;
+  for (var i = 0; i < state.bullets.length; i++) {
+    game.bullets.push(new Bullet(state.bullets[i]));
   }
-}
+  this.version = state.version;
+};
