@@ -41,6 +41,11 @@ socketio.on('connection', function(socket) {
   setInterval( function() {
     socket.emit('ping', Date.now());
   }, 1000);
+
+  setInterval( function() {
+    socket.emit('ping', Date.now());
+  }, 100);
+
 });
 
 
@@ -58,6 +63,7 @@ Game.prototype.start = function() {
   this.crates.push(new Crate({x: 300, y: 300}));
   this.running = true;
   setTimeout(this.tic.bind(this), 33);
+  setTimeout(this.sendPlayers.bind(this), 100);
 };
 
 Game.prototype.tic = function() {
@@ -67,12 +73,16 @@ Game.prototype.tic = function() {
   this.crates.forEach(function(x) { if (x) x.move(1000 / 60); });
   this.bullets.forEach(function(x) { if (x) x.move(1000 / 60); });
 
+  setTimeout(this.tic.bind(this), 33);
+};
+
+Game.prototype.sendPlayers = function() {
   socketio.emit('globalUpdate', {
     players: this.players.map(function(a) { return a.toEmit(); }),
     crates: this.crates.map(function(a) { return a.toEmit(); }),
     bullets: this.bullets.map(function(a) { return a.toEmit(); })
   });
-  setTimeout(this.tic.bind(this), 33);
+  setTimeout(this.sendPlayers.bind(this), 100);
 };
 
 Game.prototype.calculateCollisions = function() {
@@ -97,7 +107,6 @@ Game.prototype.calculateCollisions = function() {
       }
     });
   });
-
 };
 
 Game.prototype.removeDead = function() {
