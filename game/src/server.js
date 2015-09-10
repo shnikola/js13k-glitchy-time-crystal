@@ -62,7 +62,7 @@ Game.prototype.start = function() {
 
 Game.prototype.tic = function() {
   this.calculateCollisions();
-  // TODO: Purge dead
+  this.removeDead();
   this.players.forEach(function(x) { if (x) x.move(1000 / 60); });
   this.crates.forEach(function(x) { if (x) x.move(1000 / 60); });
   this.bullets.forEach(function(x) { if (x) x.move(1000 / 60); });
@@ -98,6 +98,10 @@ Game.prototype.calculateCollisions = function() {
     });
   });
 
+};
+
+Game.prototype.removeDead = function() {
+  this.bullets = this.bullets.filter(function(x) { return !x.dead; });
 };
 
 // ------ Player -------

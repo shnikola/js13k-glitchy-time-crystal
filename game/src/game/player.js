@@ -37,7 +37,7 @@ Player.prototype.merge = function(o) {
   this.x = o.x;
   this.y = o.y;
   // Merge deltas that happened in the meantime
-  for (var i = o.version; i < this.deltaHistory.length; i++) {
+  for (var i = o.version + 1; i < this.deltaHistory.length; i++) {
     this.x += this.deltaHistory[i].dx;
     this.y += this.deltaHistory[i].dy;
   }
@@ -119,7 +119,7 @@ Player.prototype.prepareDelta = function() {
 };
 
 Player.prototype.toEmit = function() {
-  return { id: this.id, team: this.team, x: this.x, y: this.y, vx: this.vx, vy: this.vy };
+  return { id: this.id, team: this.team, x: this.x, y: this.y, vx: this.vx, vy: this.vy, pingTime: this.pingTime };
 };
 
 if (typeof exports !== 'undefined') {
