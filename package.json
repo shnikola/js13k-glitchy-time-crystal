@@ -1,0 +1,25 @@
+{
+  "name": "glitchy-i-need-this-for-dependency-managment",
+  "version": "0.0.1",
+  "description": "right",
+  "main": "I need all this to save my fucking dev dependencies",
+  "scripts": {
+    "test": "none"
+  },
+  "repository": {
+    "type": "git",
+    "url": "none"
+  },
+  "keywords": [
+    "none"
+  ],
+  "author": "none",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-rimraf": "^0.1.1",
+    "gulp-uglify": "^1.4.1",
+    "gulp-util": "^3.0.6",
+    "gulp-zip": "^3.0.2"
+  }
+}
