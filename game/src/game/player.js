@@ -5,7 +5,7 @@ function Player(o, main) {
   this.color = o.team == 'a' ? '#f00' : '#00f';
   // Attributes
   this.dead = false;
-  this.speed = 0.08;
+  this.speed = 1.5;
   this.friction = 0.4;
   this.size = 10;
   this.weapon = 1;
@@ -68,12 +68,10 @@ Player.prototype.collectInput = function(timestep) {
   this.moving = false;
   this.shooting = false;
 
-  this.dx = 0; this.dy = 0;
-
-  if      (KEYBOARD[65]) { this.dx = -this.speed * timestep; this.moving = true; }
-  else if (KEYBOARD[68]) { this.dx =  this.speed * timestep; this.moving = true; }
-  if      (KEYBOARD[87]) { this.dy = -this.speed * timestep; this.moving = true; }
-  else if (KEYBOARD[83]) { this.dy =  this.speed * timestep; this.moving = true; }
+  if      (KEYBOARD[65]) { this.dx = -this.speed; this.moving = true; }
+  else if (KEYBOARD[68]) { this.dx = this.speed; this.moving = true; }
+  if      (KEYBOARD[87]) { this.dy = -this.speed; this.moving = true; }
+  else if (KEYBOARD[83]) { this.dy = this.speed; this.moving = true; }
 
   this.deltaToSend.dx += this.dx;
   this.deltaToSend.dy += this.dy;
@@ -103,8 +101,8 @@ Player.prototype.shoot = function() {
 };
 
 Player.prototype.shot = function(b) {
-  this.vx += b.vx * b.size / this.size;
-  this.vy += b.vy * b.size / this.size;
+  this.vx += 2 * b.vx * b.size / this.size;
+  this.vy += 2 * b.vy * b.size / this.size;
 };
 
 Player.prototype.stateChanged = function() {
@@ -118,8 +116,12 @@ Player.prototype.prepareDelta = function() {
   return data;
 };
 
-Player.prototype.toEmit = function() {
-  return { id: this.id, team: this.team, x: this.x, y: this.y, vx: this.vx, vy: this.vy, pingTime: this.pingTime };
+Player.prototype.toClient = function() {
+  return {
+    id: this.id, team: this.team,
+    x: this.x, y: this.y, vx: this.vx, vy: this.vy,
+    pingTime: this.pingTime, version: this.version
+  };
 };
 
 if (typeof exports !== 'undefined') {

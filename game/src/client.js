@@ -14,7 +14,7 @@ KEYBOARD = {};
 
 FRAMERATE = Framerate();
 GFX = Graphics();
-STATE = State();
+STATE = new ClientState();
 
 CHAT = Chat();
 
@@ -52,7 +52,6 @@ function connect() {
   SOCKET.on('playerInit', function(data) {
     STATE.player = new Player(data, true);
     console.log("Player initialized", STATE.player);
-
   });
 
   SOCKET.on('globalUpdate', onUpdate);
@@ -82,9 +81,10 @@ function animate(timestamp) {
 
   // Update delta of time in fixed increments of FRAMERATE.timestep
   FRAMERATE.fixedStepUpdate(function(timestep) {
-    if (STATE.player && !CHAT.chatting()) {
-      STATE.player.collectInput(timestep);
+    if (STATE.player) {
+      if (!CHAT.chatting()) STATE.player.collectInput(timestep);
       STATE.player.move(timestep);
+      STATE.crystal.move(timestep);
     }
   });
 

@@ -34,7 +34,7 @@ Crate.prototype.draw = function(c) {
   c.fillText(this.x.toFixed(2) + ", " + this.y.toFixed(2), this.x, this.y - 10); // debug position
 };
 
-Crate.prototype.toEmit = function() {
+Crate.prototype.toClient = function() {
   return { x: this.x, y: this.y, vx: this.vx, vy: this.vy };
 };
 

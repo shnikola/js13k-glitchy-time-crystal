@@ -18,7 +18,7 @@ socketio.on('connection', function(socket) {
 
   var player = new Player({});
   player.joinGame(game);
-  socket.emit('playerInit', player.toEmit());
+  socket.emit('playerInit', player.toClient());
 
   socket.on('playerUpdate', function(state) { player.receiveUpdate(state); });
 
@@ -42,10 +42,6 @@ socketio.on('connection', function(socket) {
     socket.emit('ping', Date.now());
   }, 1000);
 
-  setInterval( function() {
-    socket.emit('ping', Date.now());
-  }, 100);
-
 });
 
 
@@ -63,7 +59,6 @@ Game.prototype.start = function() {
   this.crates.push(new Crate({x: 300, y: 300}));
   this.running = true;
   setTimeout(this.tic.bind(this), 33);
-  setTimeout(this.sendPlayers.bind(this), 100);
 };
 
 Game.prototype.tic = function() {
@@ -73,16 +68,16 @@ Game.prototype.tic = function() {
   this.crates.forEach(function(x) { if (x) x.move(1000 / 60); });
   this.bullets.forEach(function(x) { if (x) x.move(1000 / 60); });
 
+  this.sendToClients();
   setTimeout(this.tic.bind(this), 33);
 };
 
-Game.prototype.sendPlayers = function() {
+Game.prototype.sendToClients = function() {
   socketio.emit('globalUpdate', {
-    players: this.players.map(function(a) { return a.toEmit(); }),
-    crates: this.crates.map(function(a) { return a.toEmit(); }),
-    bullets: this.bullets.map(function(a) { return a.toEmit(); })
+    players: this.players.map(function(a) { return a.toClient(); }),
+    crates: this.crates.map(function(a) { return a.toClient(); }),
+    bullets: this.bullets.map(function(a) { return a.toClient(); })
   });
-  setTimeout(this.sendPlayers.bind(this), 100);
 };
 
 Game.prototype.calculateCollisions = function() {
