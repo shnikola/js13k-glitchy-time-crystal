@@ -104,7 +104,7 @@ Menu.prototype.animate = function(timestamp) {
   FRAMERATE.calculateDelta(timestamp);
 
   FRAMERATE.fixedStepUpdate(function(timestep) {
-    self.crystal.move(timestep);
+    self.crystal.interpolate(timestep);
   });
 
   if (this.loading) {
