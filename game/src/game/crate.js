@@ -1,12 +1,15 @@
 function Crate(o) {
   this.x = o.x;
   this.y = o.y;
+  this.prev = {x: o.x, y: o.y};
+  this.next = {x: o.nextX, y: o.nextY};
   this.dx = 0;
   this.dy = 0;
   this.vx = o.vx || 0;
   this.vy = o.vy || 0;
   this.friction = 0.7;
   this.size = 22;
+  this.interval = 100;
 }
 
 Crate.prototype.move = function(t) {
@@ -21,6 +24,11 @@ Crate.prototype.move = function(t) {
   this.vx *= this.friction;
   this.vy *= this.friction;
   this.dx = this.dy = 0;
+};
+
+Crate.prototype.interpolate = function(t) {
+  this.x += (this.next.x - this.prev.x) / (this.interval / t);
+  this.y += (this.next.y - this.prev.y) / (this.interval / t);
 };
 
 Crate.prototype.shot = function(b) {
@@ -40,7 +48,9 @@ Crate.prototype.draw = function(c) {
 };
 
 Crate.prototype.toClient = function() {
-  return { x: this.x, y: this.y, vx: this.vx, vy: this.vy };
+  var data = { x: this.prev.x, y: this.prev.y, nextX: this.x, nextY: this.y };
+  this.prev.x = this.x; this.prev.y = this.y;
+  return data;
 };
 
 if (typeof exports !== 'undefined') {

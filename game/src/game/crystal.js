@@ -62,7 +62,7 @@ Crystal.prototype.draw = function(c) {
   c.restore();
 };
 
-Crystal.prototype.move = function(t) {
+Crystal.prototype.interpolate = function(t) {
   if (this.glareOn) {
     this.glareX += this.glareSpeed;
     if (this.glareX > this.width) this.glareX = 0;

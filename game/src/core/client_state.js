@@ -1,17 +1,23 @@
 function ClientState() {
   this.sprites = [];
+  this.players = [];
   this.crystal = new Crystal();
   this.crystal.glareOn = true;
 }
 
 ClientState.prototype.load = function(d) {
   this.sprites = [];
+
   for (var i = 0; i < d.players.length; i++) {
-    if (this.player && d.players[i].id == this.player.id) {
+    var id = d.players[i].id;
+    if (this.player && id == this.player.id) {
       this.player.merge(d.players[i]);
+    } else if (this.players[id]) {
+      this.players[id].merge(d.players[i]);
     } else {
-      this.sprites.push(new Player(d.players[i]));
+      this.players[id] = new Player(d.players[i]);
     }
+    // Maybe push them into sprites?
   }
 
   for (i = 0; i < d.bullets.length; i++) {
@@ -27,6 +33,7 @@ ClientState.prototype.load = function(d) {
 ClientState.prototype.draw = function() {
   GFX.cls();
   this.sprites.forEach(function(s) { s.draw(GFX.context); });
+  this.players.forEach(function(s) { s.draw(GFX.context); });
   if (this.player) this.player.draw(GFX.context);
   GFX.context.font = "10px Consolas, monospace";
   if (this.player) GFX.context.fillText("DEBUG ping time:" + this.player.pingTime, 10, 10);

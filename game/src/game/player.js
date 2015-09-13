@@ -8,7 +8,7 @@ function Player(o, main) {
   this.dead = false;
   this.speed = 1.5;
   this.friction = 0.4;
-  this.size = 12;
+  this.size = 20;
   this.weapon = 1;
 
   // Input
@@ -20,6 +20,8 @@ function Player(o, main) {
   // Local State
   this.x = o.x;
   this.y = o.y;
+  this.prev = {x: o.x, y: o.y};
+  this.next = {x: o.nextX, y: o.nextY};
   this.vx = o.vx || 0;
   this.vy = o.vy || 0;
   this.dx = 0;
@@ -40,12 +42,22 @@ Player.prototype.initPosition = function() {
 
 Player.prototype.merge = function(o) {
   this.pingTime = o.pingTime;
-  this.x = o.x;
-  this.y = o.y;
-  // Merge deltas that happened in the meantime
-  for (var i = o.version + 1; i < this.deltaHistory.length; i++) {
-    this.x += this.deltaHistory[i].dx;
-    this.y += this.deltaHistory[i].dy;
+  if (this.main) {
+    // Immediately update position
+    this.x = o.nextX;
+    this.y = o.nextY;
+    // Merge deltas that happened in the meantime
+    for (var i = o.version + 1; i < this.deltaHistory.length; i++) {
+      this.x += this.deltaHistory[i].dx;
+      this.y += this.deltaHistory[i].dy;
+    }
+  } else {
+    // Set to previous position to interpolate
+    this.x = o.x;
+    this.y = o.y;
+    this.prev = {x: o.x, y: o.y};
+    this.next = {x: o.nextX, y: o.nextY};
+    this.moving = Math.abs(this.prev.x - this.next.x) > 1 || Math.abs(this.prev.y - this.next.y) > 1;
   }
 };
 
@@ -128,7 +140,22 @@ Player.prototype.move = function(t) {
   this.vy *= this.friction;
   this.dx = 0; this.dy = 0;
 
-  this.legPos += Math.PI / 20;
+  if (this.moving) {
+    this.legPos += Math.PI / 20;
+  } else {
+    this.legPos = 0;
+  }
+};
+
+Player.prototype.interpolate = function(t) {
+  this.x += (this.next.x - this.prev.x) / (100 / t);
+  this.y += (this.next.y - this.prev.y) / (100 / t);
+
+  if (this.moving) {
+    this.legPos += Math.PI / 20;
+  } else {
+    this.legPos = 0;
+  }
 };
 
 Player.prototype.shot = function(b) {
@@ -148,11 +175,13 @@ Player.prototype.prepareDelta = function() {
 };
 
 Player.prototype.toClient = function() {
-  return {
+  var data = {
     id: this.id, team: this.team,
-    x: this.x, y: this.y, vx: this.vx, vy: this.vy,
+    x: this.prev.x, y: this.prev.y, nextX: this.x, nextY: this.y,
     pingTime: this.pingTime, version: this.version
   };
+  this.prev.x = this.x; this.prev.y = this.y;
+  return data;
 };
 
 if (typeof exports !== 'undefined') {

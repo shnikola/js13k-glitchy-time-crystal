@@ -102,8 +102,8 @@ function animateGame(timestamp) {
       if (!CHAT.chatting) STATE.player.collectInput(timestep);
       STATE.player.move(timestep);
     }
-    STATE.crystal.move(timestep);
-
+    STATE.players.forEach(function(s) { s.interpolate(timestep); });
+    STATE.sprites.forEach(function(s) { s.interpolate(timestep); });
   });
 
   if (STATE.player && STATE.player.stateChanged()) {

@@ -1,17 +1,17 @@
-log('Hi! This is some game.');
-
 var socketio = require('sandbox-io');
 
-var Rooms = require('./core/rooms.js').rooms;
-var Player = require('./game/player.js').player;
+var Rooms =   require('./core/rooms.js').rooms;
+var World =   require('./game/world.js').world;
+var Player =  require('./game/player.js').player;
 var Crystal = require('./game/crystal.js').crystal;
-var Bullet = require('./game/bullet.js').bullet;
-var Crate = require('./game/crate.js').crate;
-var Utils = require('./core/utils.js').utils;
-
-log('Loaded sandbox-io', socketio);
+var Bullet =  require('./game/bullet.js').bullet;
+var Crate =   require('./game/crate.js').crate;
+var Utils =   require('./core/utils.js').utils;
 
 var rooms = new Rooms();
+
+var updateInterval = 1000 / 60;
+var sendInterval = 100;
 
 socketio.on('connection', function(socket) {
   log.debug('New connection', socket.id);
@@ -45,6 +45,9 @@ function Game(roomId) {
   this.crystal = new Crystal();
   this.crates = [];
   this.bullets = [];
+
+  this.initMap();
+  this.initLoop();
 }
 
 
@@ -96,25 +99,34 @@ Game.prototype.joinSpectator = function(socket) {
   socket.emit('spectatorJoin', { waiting: !this.running });
 };
 
-Game.prototype.start = function() {
-  this.crates.push(new Crate({x: 300, y: 300}));
-  this.running = true;
-  socketio.to("room-" + this.roomId).emit('gameStart');
-  setTimeout(this.tic.bind(this), 33);
+Game.prototype.initMap = function() {
+  for (var i = 0; i < 6; i++) {
+    var section = World.width / 6;
+    this.crates.push(new Crate({x: section * i + section * Math.random(), y: World.height * Math.random() }));
+  }
 };
 
-Game.prototype.tic = function() {
-  this.calculateCollisions();
-  this.removeDead();
-  this.players.forEach(function(x) { if (x) x.move(1000 / 60); });
-  this.crates.forEach(function(x) { if (x) x.move(1000 / 60); });
-  this.bullets.forEach(function(x) { if (x) x.move(1000 / 60); });
+Game.prototype.initLoop = function() {
+  setTimeout(this.update.bind(this), updateInterval);
+  setTimeout(this.sendToClients.bind(this), sendInterval);
+};
 
-  this.sendToClients();
-  setTimeout(this.tic.bind(this), 33);
+Game.prototype.start = function() {
+  this.running = true;
+  socketio.to("room-" + this.roomId).emit('gameStart');
+};
+
+Game.prototype.update = function() {
+  setTimeout(this.update.bind(this), updateInterval);
+  this.removeDead();
+  this.calculateCollisions(updateInterval);
+  this.players.forEach(function(x) { if (x) x.move(updateInterval); });
+  this.crates.forEach(function(x) { if (x) x.move(updateInterval); });
+  this.bullets.forEach(function(x) { if (x) x.move(updateInterval); });
 };
 
 Game.prototype.sendToClients = function() {
+  setTimeout(this.sendToClients.bind(this), sendInterval);
   socketio.to("room-" + this.roomId).emit('globalUpdate', {
     players: this.players.map(function(a) { return a.toClient(); }),
     crates: this.crates.map(function(a) { return a.toClient(); }),
