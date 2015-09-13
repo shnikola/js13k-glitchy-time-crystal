@@ -19,7 +19,7 @@ Bullet.prototype.draw = function(c) {
   if (this.dead) return;
   c.fillStyle = "#fff";
   c.fillRect(this.x - 1, this.y - 1 , this.size, this.size);
-  c.fillText(this.x.toFixed(2) + ", " + this.y.toFixed(2), this.x, this.y - 10); // debug position
+  //c.fillText(this.x.toFixed(2) + ", " + this.y.toFixed(2), this.x, this.y - 10); // debug position
 };
 
 Bullet.prototype.toClient = function() {

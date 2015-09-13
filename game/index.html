@@ -2,18 +2,30 @@
 <html>
 
 <head>
-  <title>GlItChY Timɘ CrZstal</title>
+  <title>Glitchy Time Crystal</title>
   <meta charset="utf-8">
   <link rel="stylesheet" href="src/style.css">
   <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body>
-  <canvas id="world" width="800" height="480" onclick="this.focus();" oncontextmenu="return false;"></canvas>
-  <input type="text" id="chaty" maxlength="80">
+  <div id="screen">
+    <canvas id="world" width="800" height="480" onclick="this.focus();" oncontextmenu="return false;"></canvas>
+    <input type="text" id="chaty" maxlength="80" value="Press 't' to chat.">
+    <div id="menu">
+      <div class="room" id="room-1">
+        <h2></h2>
+        <h3></h3>
+        <h2></h2>
+      </div>
+    </div>
+  </div>
+
   <script src="src/core/framerate.js"></script>
   <script src="src/core/graphics.js"></script>
+  <script src="src/core/rooms.js"></script>
   <script src="src/core/client_state.js"></script>
+  <script src="src/game/menu.js"></script>
   <script src="src/game/world.js"></script>
   <script src="src/game/weapons.js"></script>
   <script src="src/game/bullet.js"></script>

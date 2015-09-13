@@ -1,13 +1,20 @@
 Graphics = function() {
-  var canvas = document.getElementById("world"),
+  var screen = document.getElementById("screen"),
+      canvas = document.getElementById("world"),
       context = canvas.getContext("2d"),
 
       api = {
         canvas: canvas,
         context: context,
+        screen: screen,
         cls: function() {
-          context.fillStyle = '#000';
           context.clearRect(0, 0, canvas.width, canvas.height);
+        },
+        hideCursor: function() {
+          canvas.style.cursor = 'none';
+        },
+        showCursor: function() {
+          canvas.style.cursor = 'inherit';
         },
         rect: function(x, y, w, h) {
           context.fillRect(x, y, w, h);

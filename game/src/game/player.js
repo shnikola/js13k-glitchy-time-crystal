@@ -2,17 +2,21 @@ function Player(o, main) {
   this.main = !!main;
   this.id = o.id;
   this.team = o.team;
-  this.color = o.team == 'a' ? '#f00' : '#00f';
+  this.color = o.team == 'a' ? '#a03034' : '#fff';
+
   // Attributes
   this.dead = false;
   this.speed = 1.5;
   this.friction = 0.4;
-  this.size = 10;
+  this.size = 12;
   this.weapon = 1;
+
   // Input
   this.moving = false;
   this.shooting = false;
+  this.shootingDelayed = false;
   this.shootingBlocked = false;
+
   // Local State
   this.x = o.x;
   this.y = o.y;
@@ -21,6 +25,8 @@ function Player(o, main) {
   this.dx = 0;
   this.dy = 0;
   this.angle = 0;
+  this.legPos = 0;
+
   // Local -> Server state
   this.deltaToSend = { dx: 0, dy: 0, version: 0, bullets: [], changed: false };
   this.deltaHistory = [];
@@ -28,8 +34,8 @@ function Player(o, main) {
 }
 
 Player.prototype.initPosition = function() {
-  this.x = WORLD.width * Math.random();
-  this.y = WORLD.height * Math.random();
+  this.x = 50 + (WORLD.width - 50) * Math.random();
+  this.y = 50 + (WORLD.height - 50)* Math.random();
 };
 
 Player.prototype.merge = function(o) {
@@ -45,28 +51,45 @@ Player.prototype.merge = function(o) {
 
 Player.prototype.draw = function(c) {
   // player
-  c.fillStyle = this.color;
-  c.fillRect(this.x, this.y, this.size, this.size);
-  c.fillText(this.x.toFixed(2) + ", " + this.y.toFixed(2), this.x, this.y - 10); // debug position
+  c.fillStyle = c.strokeStyle = this.color;
+  c.lineWidth = 1;
+
+  var leftLeg = 5 + Math.sin(this.legPos) * 2, rightLeg = 5 - Math.sin(this.legPos) * 2;
+  c.beginPath();
+  c.moveTo(this.x, this.y);
+  c.lineTo(this.x + this.size, this.y);
+  c.lineTo(this.x + this.size, this.y + this.size + rightLeg);
+  c.lineTo(this.x + this.size * 3 / 4, this.y + this.size + rightLeg);
+  c.lineTo(this.x + this.size * 3 / 4, this.y + this.size);
+  c.lineTo(this.x + this.size * 1 / 4, this.y + this.size);
+  c.lineTo(this.x + this.size * 1 / 4, this.y + this.size + leftLeg);
+  c.lineTo(this.x, this.y + this.size + leftLeg);
+  c.closePath();
+  c.stroke();
+
+  c.fillRect(this.x + this.size / 3 - 1, this.y + this.size / 4, 1, 1);
+  c.fillRect(this.x + this.size * 2 / 3, this.y + this.size / 4, 1, 1);
+
+  //c.fillText(this.x.toFixed(2) + ", " + this.y.toFixed(2), this.x, this.y - 10); // debug position
 
   if (this.main) {
     // crosshair
     c.lineWidth = 2;
-    c.strokeStyle = "#fff";
+
     c.beginPath();
     c.arc(MOUSE.x, MOUSE.y, 5, 0, Math.PI * 2);
     c.stroke();
 
     // Weapon
-    c.fillRect(this.x + this.size / 2 + this.size * Math.cos(this.angle),
-               this.y + this.size / 2 + this.size * Math.sin(this.angle),
+    c.fillRect(this.x - 2 + this.size / 2 + this.size * Math.cos(this.angle),
+               this.y - 2 + this.size / 2 + this.size * Math.sin(this.angle),
                3, 3);
   }
 };
 
 Player.prototype.collectInput = function(timestep) {
+  // moving
   this.moving = false;
-  this.shooting = false;
 
   if      (KEYBOARD[65]) { this.dx = -this.speed; this.moving = true; }
   else if (KEYBOARD[68]) { this.dx = this.speed; this.moving = true; }
@@ -76,7 +99,23 @@ Player.prototype.collectInput = function(timestep) {
   this.deltaToSend.dx += this.dx;
   this.deltaToSend.dy += this.dy;
 
-  if (MOUSE.down) { this.shoot(); }
+  // shooting
+  this.shooting = false;
+
+  if (MOUSE.down && !this.shootingBlocked && !this.shootingDelayed) {
+    this.deltaToSend.bullets.push(
+      {x: this.x, y: this.y, angle: this.angle, weapon: this.weapon, player: this.id}
+    );
+    this.shooting = true;
+    this.shootingBlocked = !WEAPONS[this.weapon].automatic;
+    this.shootingDelayed = true;
+    var self = this;
+    setTimeout(function() { self.shootingDelayed = false; }, WEAPONS[this.weapon].delay);
+  } else if (!MOUSE.down) {
+    this.shootingBlocked = false;
+  }
+
+  // crosshair
   this.angle = Math.atan2(MOUSE.y - this.y, MOUSE.x - this.x);
 
   if (this.moving || this.shooting) this.deltaToSend.changed = true;
@@ -88,21 +127,13 @@ Player.prototype.move = function(t) {
   this.vx *= this.friction;
   this.vy *= this.friction;
   this.dx = 0; this.dy = 0;
-};
 
-Player.prototype.shoot = function() {
-  if (this.shootingBlocked) return;
-  this.shooting = true;
-  this.shootingBlocked = true;
-
-  this.deltaToSend.bullets.push({x: this.x, y: this.y, angle: this.angle, weapon: this.weapon, player: this.id});
-  var self = this;
-  setTimeout(function() { self.shootingBlocked = false; }, 600);
+  this.legPos += Math.PI / 20;
 };
 
 Player.prototype.shot = function(b) {
-  this.vx += 2 * b.vx * b.size / this.size;
-  this.vy += 2 * b.vy * b.size / this.size;
+  this.vx += 5 * b.vx * b.size / this.size;
+  this.vy += 5 * b.vy * b.size / this.size;
 };
 
 Player.prototype.stateChanged = function() {
@@ -126,5 +157,6 @@ Player.prototype.toClient = function() {
 
 if (typeof exports !== 'undefined') {
   WORLD = require('./world.js').world;
+  WEAPONS = require('./world.js').weapons;
   exports.player = Player;
 }
